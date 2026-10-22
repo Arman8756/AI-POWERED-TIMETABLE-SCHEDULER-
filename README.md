@@ -85,3 +85,7 @@ This project is open source and available for educational purposes.
 ## Contact
 
 For support or inquiries, use the Support button in the application header.
+=======
+# AI-POWERED-TIMETABLE-SCHEDULER-
+Time table scheduler 
+>>>>>>> 58bfbd6b82b01f9ee55a3c00a3de66a3baa359cd
