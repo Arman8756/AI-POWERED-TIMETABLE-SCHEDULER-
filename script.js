@@ -47,6 +47,9 @@ function handleCardClick(cardTitle) {
             break;
         case 'Teacher Substitute':
             showNotification('Teacher Substitute', 'Opening substitute management system...');
+            setTimeout(() => {
+                window.location.href = 'teacher-substitute.html';
+            }, 500);
             break;
         case 'Step-by-Step Guide':
             showNotification('Guide', 'Opening interactive guide...');

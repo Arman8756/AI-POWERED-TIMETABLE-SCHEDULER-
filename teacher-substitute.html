@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Substitute Management - AI Powered Timetable Scheduler</title>
+    <link rel="stylesheet" href="timetable-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ── Page layout ── */
+        .sub-header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .sub-header .header-left { display:flex; align-items:center; gap:1rem; }
+        .sub-header .header-title { display:flex; align-items:center; gap:.75rem; }
+        .sub-header .header-title i { font-size:1.8rem; color:#f97316; }
+        .sub-header .header-title h1 { font-size:1.3rem; font-weight:600; color:#1f2937; }
+        .sub-header .subtitle { font-size:.85rem; color:#6b7280; }
+
+        .page-body { padding:2rem; background:#f5f7fa; min-height:calc(100vh - 80px); }
+
+        /* ── Stats bar ── */
+        .stats-bar {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+            gap:1rem;
+            margin-bottom:2rem;
+        }
+        .stat-card {
+            background:white;
+            border-radius:12px;
+            padding:1.25rem 1.5rem;
+            box-shadow:0 1px 4px rgba(0,0,0,.06);
+            display:flex;
+            align-items:center;
+            gap:1rem;
+        }
+        .stat-icon {
+            width:44px; height:44px;
+            border-radius:10px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.2rem; flex-shrink:0;
+        }
+        .stat-icon.orange { background:#fff7ed; color:#f97316; }
+        .stat-icon.red    { background:#fef2f2; color:#ef4444; }
+        .stat-icon.green  { background:#f0fdf4; color:#22c55e; }
+        .stat-icon.yellow { background:#fefce8; color:#eab308; }
+        .stat-value { font-size:1.6rem; font-weight:700; color:#1f2937; line-height:1; }
+        .stat-label { font-size:.78rem; color:#6b7280; margin-top:.2rem; }
+
+        /* ── Tab bar ── */
+        .tab-bar {
+            display:flex; gap:.5rem;
+            background:white;
+            padding:.35rem;
+            border-radius:10px;
+            box-shadow:0 1px 4px rgba(0,0,0,.06);
+            margin-bottom:2rem;
+            width:fit-content;
+        }
+        .tab-btn {
+            background:transparent; border:none;
+            padding:.5rem 1.25rem;
+            border-radius:8px;
+            cursor:pointer; font-size:.92rem; font-weight:500;
+            color:#6b7280;
+            transition:all .25s;
+            display:flex; align-items:center; gap:.4rem;
+        }
+        .tab-btn.active {
+            background:#f97316; color:white;
+            box-shadow:0 2px 6px rgba(249,115,22,.35);
+        }
+
+        /* ── Section containers ── */
+        .section-panel {
+            background:white; border-radius:12px;
+            padding:1.75rem;
+            box-shadow:0 1px 4px rgba(0,0,0,.06);
+        }
+        .section-header-row {
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:1.5rem;
+        }
+        .section-header-row h2 { font-size:1.1rem; font-weight:600; color:#1f2937; }
+
+        /* ── Filter bar ── */
+        .filter-bar {
+            display:flex; gap:.75rem; flex-wrap:wrap;
+            margin-bottom:1.5rem;
+        }
+        .filter-bar select, .filter-bar input[type="date"] {
+            padding:.45rem .9rem;
+            border:1px solid #d1d5db; border-radius:8px;
+            font-size:.88rem; color:#374151; cursor:pointer;
+            background:white;
+        }
+        .filter-bar select:focus, .filter-bar input:focus {
+            outline:none; border-color:#f97316;
+        }
+
+        /* ── Table ── */
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th {
+            background:#f9fafb; padding:.75rem 1rem;
+            text-align:left; font-size:.83rem; font-weight:600;
+            color:#6b7280; border-bottom:1px solid #e5e7eb;
+        }
+        .data-table td {
+            padding:.85rem 1rem;
+            border-bottom:1px solid #f3f4f6;
+            font-size:.9rem; color:#374151;
+            vertical-align:middle;
+        }
+        .data-table tr:last-child td { border-bottom:none; }
+        .data-table tr:hover td { background:#fafafa; }
+
+        .empty-table-msg {
+            text-align:center; padding:3rem 1rem; color:#9ca3af;
+        }
+        .empty-table-msg i { font-size:2.5rem; margin-bottom:.75rem; display:block; }
+
+        /* ── Badges ── */
+        .badge {
+            display:inline-flex; align-items:center;
+            padding:.25rem .7rem; border-radius:99px;
+            font-size:.78rem; font-weight:600;
+        }
+        .badge.pending  { background:#fef3c7; color:#92400e; }
+        .badge.confirmed{ background:#d1fae5; color:#065f46; }
+        .badge.cancelled{ background:#fee2e2; color:#991b1b; }
+        .badge.assigned { background:#dbeafe; color:#1e40af; }
+        .badge.completed{ background:#d1fae5; color:#065f46; }
+        .badge.uncovered{ background:#fce7f3; color:#9f1239; }
+
+        /* ── Action buttons ── */
+        .btn-primary {
+            background:#f97316; color:white; border:none;
+            padding:.6rem 1.25rem; border-radius:8px;
+            cursor:pointer; font-size:.9rem; font-weight:500;
+            display:inline-flex; align-items:center; gap:.4rem;
+            transition:background .25s;
+        }
+        .btn-primary:hover { background:#ea6c00; }
+
+        .btn-secondary {
+            background:white; color:#374151;
+            border:1px solid #d1d5db;
+            padding:.5rem 1rem; border-radius:8px;
+            cursor:pointer; font-size:.88rem; font-weight:500;
+            display:inline-flex; align-items:center; gap:.4rem;
+            transition:all .25s;
+        }
+        .btn-secondary:hover { border-color:#f97316; color:#f97316; }
+
+        .btn-danger {
+            background:#fef2f2; color:#ef4444; border:none;
+            padding:.4rem .8rem; border-radius:6px;
+            cursor:pointer; font-size:.82rem; font-weight:500;
+            transition:background .2s;
+        }
+        .btn-danger:hover { background:#fee2e2; }
+
+        .btn-icon {
+            background:none; border:none;
+            width:30px; height:30px; border-radius:6px;
+            cursor:pointer; font-size:.85rem; color:#6b7280;
+            display:inline-flex; align-items:center; justify-content:center;
+            transition:all .2s;
+        }
+        .btn-icon:hover { background:#f3f4f6; color:#374151; }
+        .btn-icon.red:hover { background:#fee2e2; color:#ef4444; }
+
+        /* ── Modal overlay ── */
+        .modal-overlay {
+            position:fixed; inset:0;
+            background:rgba(0,0,0,.5);
+            display:flex; align-items:center; justify-content:center;
+            z-index:500; padding:1rem;
+        }
+        .modal-overlay.hidden { display:none; }
+        .modal-box {
+            background:white; border-radius:16px;
+            padding:2rem; width:100%; max-width:560px;
+            box-shadow:0 20px 60px rgba(0,0,0,.2);
+            max-height:90vh; overflow-y:auto;
+        }
+        .modal-box.wide { max-width:700px; }
+        .modal-header {
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:1.5rem;
+        }
+        .modal-header h3 { font-size:1.15rem; font-weight:600; color:#1f2937; }
+        .modal-close {
+            background:none; border:none;
+            font-size:1.2rem; color:#9ca3af; cursor:pointer;
+        }
+        .modal-close:hover { color:#374151; }
+
+        /* ── Form fields ── */
+        .form-grid { display:grid; gap:1.1rem; }
+        .form-grid.cols-2 { grid-template-columns:1fr 1fr; }
+        .form-group { display:flex; flex-direction:column; gap:.35rem; }
+        .form-group label { font-size:.85rem; font-weight:500; color:#374151; }
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            padding:.55rem .9rem;
+            border:1px solid #d1d5db; border-radius:8px;
+            font-size:.9rem; color:#374151;
+            transition:border .2s;
+            font-family:inherit;
+        }
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline:none; border-color:#f97316;
+            box-shadow:0 0 0 3px rgba(249,115,22,.1);
+        }
+        .form-group textarea { resize:vertical; min-height:70px; }
+        .form-hint { font-size:.78rem; color:#9ca3af; margin-top:.15rem; }
+
+        .modal-footer {
+            display:flex; justify-content:flex-end; gap:.75rem;
+            margin-top:1.75rem; padding-top:1.25rem;
+            border-top:1px solid #f3f4f6;
+        }
+
+        /* ── Substitute picker card ── */
+        .sub-picker-list {
+            display:flex; flex-direction:column; gap:.6rem;
+            max-height:300px; overflow-y:auto;
+            margin-top:.5rem;
+        }
+        .sub-picker-item {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:.75rem 1rem; border-radius:10px;
+            border:1.5px solid #e5e7eb;
+            cursor:pointer; transition:all .2s;
+        }
+        .sub-picker-item:hover { border-color:#f97316; background:#fff7ed; }
+        .sub-picker-item.selected { border-color:#f97316; background:#fff7ed; }
+        .sub-picker-item.unavailable {
+            opacity:.5; cursor:not-allowed;
+            border-color:#e5e7eb; background:#f9fafb;
+        }
+        .sub-picker-info { display:flex; align-items:center; gap:.75rem; }
+        .sub-avatar {
+            width:36px; height:36px; border-radius:50%;
+            background:#f97316; color:white;
+            display:flex; align-items:center; justify-content:center;
+            font-weight:600; font-size:.9rem; flex-shrink:0;
+        }
+        .sub-picker-name { font-weight:600; font-size:.9rem; color:#1f2937; }
+        .sub-picker-status { font-size:.78rem; color:#6b7280; margin-top:.1rem; }
+        .conflict-tag {
+            font-size:.72rem; padding:.15rem .5rem;
+            border-radius:99px; background:#fee2e2; color:#ef4444; font-weight:600;
+        }
+        .available-tag {
+            font-size:.72rem; padding:.15rem .5rem;
+            border-radius:99px; background:#d1fae5; color:#065f46; font-weight:600;
+        }
+
+        /* ── Affected lessons ── */
+        .affected-lessons-list {
+            display:flex; flex-direction:column; gap:.5rem;
+            margin-top:.75rem; max-height:250px; overflow-y:auto;
+        }
+        .affected-lesson-item {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:.65rem 1rem; border-radius:8px;
+            background:#f9fafb; border:1px solid #e5e7eb;
+            font-size:.88rem;
+        }
+        .lesson-slot-info { display:flex; flex-direction:column; }
+        .lesson-slot-label { font-weight:600; color:#1f2937; }
+        .lesson-slot-sub { font-size:.78rem; color:#6b7280; margin-top:.1rem; }
+        .assign-sub-btn {
+            background:#f97316; color:white; border:none;
+            padding:.3rem .75rem; border-radius:6px;
+            cursor:pointer; font-size:.8rem; font-weight:500;
+            transition:background .2s; white-space:nowrap;
+        }
+        .assign-sub-btn:hover { background:#ea6c00; }
+        .assigned-tag {
+            font-size:.78rem; padding:.2rem .6rem;
+            background:#d1fae5; color:#065f46;
+            border-radius:99px; font-weight:600;
+        }
+
+        /* ── Notification toast ── */
+        .toast {
+            position:fixed; bottom:1.5rem; right:1.5rem;
+            background:#1f2937; color:white;
+            padding:1rem 1.5rem; border-radius:10px;
+            box-shadow:0 8px 24px rgba(0,0,0,.2);
+            z-index:1000; display:flex; align-items:center; gap:.75rem;
+            font-size:.92rem; animation:slideUp .3s ease;
+            max-width:340px;
+        }
+        .toast.success { background:#065f46; }
+        .toast.error   { background:#991b1b; }
+        .toast.hidden  { display:none; }
+        @keyframes slideUp {
+            from { transform:translateY(20px); opacity:0; }
+            to   { transform:translateY(0);    opacity:1; }
+        }
+
+        /* ── Confirmation dialog ── */
+        .confirm-box { max-width:400px; text-align:center; }
+        .confirm-box .confirm-icon { font-size:2.5rem; margin-bottom:1rem; }
+        .confirm-box h3 { margin-bottom:.5rem; }
+        .confirm-box p { color:#6b7280; font-size:.92rem; margin-bottom:1.5rem; }
+
+        /* ── Empty state ── */
+        .empty-state {
+            text-align:center; padding:4rem 1rem; color:#9ca3af;
+        }
+        .empty-state i { font-size:3.5rem; margin-bottom:1rem; display:block; color:#d1d5db; }
+        .empty-state h3 { color:#374151; margin-bottom:.5rem; }
+        .empty-state p { font-size:.9rem; }
+
+        /* ── Responsive ── */
+        @media (max-width:640px) {
+            .form-grid.cols-2 { grid-template-columns:1fr; }
+            .stats-bar { grid-template-columns:1fr 1fr; }
+            .page-body { padding:1rem; }
+        }
+
+        /* ── History tab ── */
+        .audit-item {
+            display:flex; gap:1rem;
+            padding:.85rem 0; border-bottom:1px solid #f3f4f6;
+        }
+        .audit-dot {
+            width:32px; height:32px; border-radius:50%; flex-shrink:0;
+            display:flex; align-items:center; justify-content:center;
+            font-size:.8rem;
+        }
+        .audit-dot.create { background:#d1fae5; color:#065f46; }
+        .audit-dot.update { background:#dbeafe; color:#1e40af; }
+        .audit-dot.delete { background:#fee2e2; color:#991b1b; }
+        .audit-text { font-size:.88rem; color:#374151; }
+        .audit-time { font-size:.75rem; color:#9ca3af; margin-top:.2rem; }
+    </style>
+</head>
+<body>
+
+<!-- ════════════════ HEADER ════════════════ -->
+<header class="sub-header">
+    <div class="header-left">
+        <button class="back-btn" onclick="window.location.href='index.html'">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-title">
+            <i class="fas fa-user-tie"></i>
+            <div>
+                <h1>Teacher Substitute Management</h1>
+                <span class="subtitle">Track absences &amp; assign substitutes</span>
+            </div>
+        </div>
+    </div>
+    <div style="display:flex;gap:.75rem;align-items:center;">
+        <button class="btn-primary" onclick="openAbsenceModal()">
+            <i class="fas fa-plus"></i> Mark Absence
+        </button>
+    </div>
+</header>
+
+<!-- ════════════════ PAGE BODY ════════════════ -->
+<div class="page-body">
+
+    <!-- Stats bar -->
+    <div class="stats-bar" id="statsBar">
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="fas fa-user-slash"></i></div>
+            <div>
+                <div class="stat-value" id="statTotalAbsences">0</div>
+                <div class="stat-label">Total Absences</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-exclamation-circle"></i></div>
+            <div>
+                <div class="stat-value" id="statUncovered">0</div>
+                <div class="stat-label">Uncovered Lessons</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+            <div>
+                <div class="stat-value" id="statCovered">0</div>
+                <div class="stat-label">Covered Lessons</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon yellow"><i class="fas fa-clock"></i></div>
+            <div>
+                <div class="stat-value" id="statPending">0</div>
+                <div class="stat-label">Pending Assignment</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+        <button class="tab-btn active" id="tabAbsences" onclick="switchTab('absences')">
+            <i class="fas fa-user-slash"></i> Absences
+        </button>
+        <button class="tab-btn" id="tabSubstitutions" onclick="switchTab('substitutions')">
+            <i class="fas fa-exchange-alt"></i> Substitutions
+        </button>
+        <button class="tab-btn" id="tabHistory" onclick="switchTab('history')">
+            <i class="fas fa-history"></i> History
+        </button>
+    </div>
+
+    <!-- ── ABSENCES PANEL ── -->
+    <div class="section-panel" id="panelAbsences">
+        <div class="section-header-row">
+            <h2><i class="fas fa-user-slash" style="color:#f97316;margin-right:.4rem;"></i> Absence Records</h2>
+            <button class="btn-primary" onclick="openAbsenceModal()">
+                <i class="fas fa-plus"></i> Mark Absence
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar">
+            <select id="absTeacherFilter" onchange="renderAbsences()">
+                <option value="">All Teachers</option>
+            </select>
+            <select id="absStatusFilter" onchange="renderAbsences()">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+            <input type="date" id="absDateFilter" onchange="renderAbsences()">
+        </div>
+
+        <div id="absencesTableWrap">
+            <div class="empty-state" id="absencesEmpty">
+                <i class="fas fa-calendar-check"></i>
+                <h3>No absences recorded</h3>
+                <p>Click "Mark Absence" to record a teacher absence and start assigning substitutes.</p>
+            </div>
+            <table class="data-table" id="absencesTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Teacher</th>
+                        <th>Type</th>
+                        <th>Date / Period</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Coverage</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="absencesTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── SUBSTITUTIONS PANEL ── -->
+    <div class="section-panel hidden" id="panelSubstitutions" style="display:none;">
+        <div class="section-header-row">
+            <h2><i class="fas fa-exchange-alt" style="color:#f97316;margin-right:.4rem;"></i> Substitution Assignments</h2>
+        </div>
+        <div class="filter-bar">
+            <select id="subTeacherFilter" onchange="renderSubstitutions()">
+                <option value="">All Substitutes</option>
+            </select>
+            <select id="subStatusFilter" onchange="renderSubstitutions()">
+                <option value="">All Statuses</option>
+                <option value="assigned">Assigned</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+        </div>
+        <div id="substitutionsTableWrap">
+            <div class="empty-state" id="substitutionsEmpty">
+                <i class="fas fa-exchange-alt"></i>
+                <h3>No substitutions yet</h3>
+                <p>Assign substitutes from the Absences tab to see them listed here.</p>
+            </div>
+            <table class="data-table" id="substitutionsTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Absent Teacher</th>
+                        <th>Substitute</th>
+                        <th>Date</th>
+                        <th>Period</th>
+                        <th>Subject / Class</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="substitutionsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── HISTORY PANEL ── -->
+    <div class="section-panel" id="panelHistory" style="display:none;">
+        <div class="section-header-row">
+            <h2><i class="fas fa-history" style="color:#f97316;margin-right:.4rem;"></i> Audit History</h2>
+            <button class="btn-secondary" onclick="clearHistory()" style="font-size:.82rem;">
+                <i class="fas fa-trash-alt"></i> Clear
+            </button>
+        </div>
+        <div id="historyList">
+            <div class="empty-state" id="historyEmpty">
+                <i class="fas fa-history"></i>
+                <h3>No activity yet</h3>
+                <p>All absence and substitution actions will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /page-body -->
+
+
+<!-- ════════════════ ABSENCE MODAL ════════════════ -->
+<div class="modal-overlay hidden" id="absenceModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="absenceModalTitle"><i class="fas fa-user-slash" style="color:#f97316;margin-right:.5rem;"></i> Mark Teacher Absence</h3>
+            <button class="modal-close" onclick="closeAbsenceModal()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Teacher *</label>
+                <select id="absTeacher">
+                    <option value="">-- Select Teacher --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Absence Type *</label>
+                <select id="absType" onchange="updateAbsenceTypeFields()">
+                    <option value="full-day">Full Day</option>
+                    <option value="partial-day">Partial Day (specific periods)</option>
+                    <option value="date-range">Date Range</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="absStartDateGroup">
+                <label>Date *</label>
+                <input type="date" id="absStartDate">
+            </div>
+
+            <div class="form-group" id="absEndDateGroup" style="display:none;">
+                <label>End Date *</label>
+                <input type="date" id="absEndDate">
+            </div>
+
+            <div class="form-group" id="absPeriodsGroup" style="display:none;">
+                <label>Periods (comma-separated, e.g. 1,3,5)</label>
+                <input type="text" id="absPeriods" placeholder="e.g. 1,3,5">
+                <span class="form-hint">Leave blank for all periods</span>
+            </div>
+
+            <div class="form-group">
+                <label>Reason *</label>
+                <select id="absReason">
+                    <option value="sick">Sick Leave</option>
+                    <option value="personal">Personal Leave</option>
+                    <option value="training">Training / Workshop</option>
+                    <option value="emergency">Emergency</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Notes (optional)</label>
+                <textarea id="absNotes" placeholder="Additional notes..."></textarea>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeAbsenceModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveAbsence()">
+                <i class="fas fa-save"></i> Save Absence
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ════════════════ AFFECTED LESSONS MODAL ════════════════ -->
+<div class="modal-overlay hidden" id="lessonsModal">
+    <div class="modal-box wide">
+        <div class="modal-header">
+            <h3><i class="fas fa-list-alt" style="color:#f97316;margin-right:.5rem;"></i> Affected Lessons</h3>
+            <button class="modal-close" onclick="closeLessonsModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <p style="color:#6b7280;font-size:.9rem;margin-bottom:1rem;" id="affectedLessonsSubtitle"></p>
+        <div class="affected-lessons-list" id="affectedLessonsList"></div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeLessonsModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ════════════════ SUBSTITUTE PICKER MODAL ════════════════ -->
+<div class="modal-overlay hidden" id="subPickerModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-check" style="color:#f97316;margin-right:.5rem;"></i> Assign Substitute</h3>
+            <button class="modal-close" onclick="closeSubPickerModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <p style="color:#6b7280;font-size:.88rem;margin-bottom:.75rem;" id="subPickerContext"></p>
+        <div class="form-group" style="margin-bottom:1rem;">
+            <label>Filter teachers</label>
+            <input type="text" id="subPickerSearch" placeholder="Search by name..." oninput="renderSubPicker()">
+        </div>
+        <div class="sub-picker-list" id="subPickerList"></div>
+        <div class="form-group" style="margin-top:1rem;">
+            <label>Notes (optional)</label>
+            <textarea id="subPickerNotes" placeholder="Any notes for the substitute..."></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeSubPickerModal()">Cancel</button>
+            <button class="btn-primary" onclick="confirmSubstitute()">
+                <i class="fas fa-check"></i> Assign
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ════════════════ CONFIRM MODAL ════════════════ -->
+<div class="modal-overlay hidden" id="confirmModal">
+    <div class="modal-box confirm-box">
+        <div class="confirm-icon" id="confirmIcon">⚠️</div>
+        <h3 id="confirmTitle">Are you sure?</h3>
+        <p id="confirmMessage">This action cannot be undone.</p>
+        <div style="display:flex;gap:.75rem;justify-content:center;">
+            <button class="btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+            <button class="btn-danger" id="confirmOkBtn" onclick="executeConfirm()">Delete</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ════════════════ TOAST ════════════════ -->
+<div class="toast hidden" id="toast">
+    <i class="fas fa-check-circle" id="toastIcon"></i>
+    <span id="toastMsg"></span>
+</div>
+
+<script src="teacher-substitute-script.js"></script>
+</body>
+</html>
