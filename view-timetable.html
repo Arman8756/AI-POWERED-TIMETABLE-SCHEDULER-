@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Timetable - AI Powered Timetable Scheduler</title>
+    <link rel="stylesheet" href="timetable-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Timetable View Specific Styles */
+        .timetable-view-header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .view-selector {
+            display: flex;
+            gap: 0.5rem;
+            background: #f3f4f6;
+            padding: 0.25rem;
+            border-radius: 8px;
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #6b7280;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn.active {
+            background: white;
+            color: #7c3aed;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-save:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        /* Timetable Grid */
+        .timetable-container {
+            padding: 2rem;
+            background: #f9fafb;
+            min-height: calc(100vh - 80px);
+        }
+
+        .timetable-grid {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .timetable-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .timetable-table th {
+            background: #f9fafb;
+            padding: 1rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .timetable-table td {
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .timetable-table td.teacher-cell {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #1f2937;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+        }
+
+        .timetable-table td.class-cell {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #1f2937;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+        }
+
+        .lesson-card {
+            background: #dbeafe;
+            padding: 0.5rem;
+            border-radius: 6px;
+            margin: 0.25rem;
+            font-size: 0.85rem;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .lesson-subject {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 0.25rem;
+        }
+
+        .lesson-details {
+            font-size: 0.75rem;
+            color: #3b82f6;
+        }
+
+        /* Color variations */
+        .lesson-card.color-1 { background: #dbeafe; }
+        .lesson-card.color-1 .lesson-subject { color: #1e40af; }
+        .lesson-card.color-1 .lesson-details { color: #3b82f6; }
+
+        .lesson-card.color-2 { background: #d1fae5; }
+        .lesson-card.color-2 .lesson-subject { color: #065f46; }
+        .lesson-card.color-2 .lesson-details { color: #10b981; }
+
+        .lesson-card.color-3 { background: #fef3c7; }
+        .lesson-card.color-3 .lesson-subject { color: #92400e; }
+        .lesson-card.color-3 .lesson-details { color: #f59e0b; }
+
+        .lesson-card.color-4 { background: #fce7f3; }
+        .lesson-card.color-4 .lesson-subject { color: #9f1239; }
+        .lesson-card.color-4 .lesson-details { color: #ec4899; }
+
+        .lesson-card.color-5 { background: #e0e7ff; }
+        .lesson-card.color-5 .lesson-subject { color: #5b21b6; }
+        .lesson-card.color-5 .lesson-details { color: #8b5cf6; }
+
+        .lesson-card.color-6 { background: #fee2e2; }
+        .lesson-card.color-6 .lesson-subject { color: #991b1b; }
+        .lesson-card.color-6 .lesson-details { color: #ef4444; }
+
+        .unscheduled-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .unscheduled-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .unscheduled-message {
+            color: #6b7280;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="timetable-view-header">
+        <div class="header-left">
+            <button class="back-btn" onclick="window.location.href='generate-timetable.html'">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <h1 style="margin-left: 1rem; font-size: 1.2rem; color: #1f2937;">Generated Timetable</h1>
+        </div>
+        <div class="header-controls">
+            <div class="view-selector">
+                <button class="view-btn" id="classWiseBtn" onclick="switchView('class')">
+                    <i class="fas fa-users"></i> Class-Wise
+                </button>
+                <button class="view-btn active" id="teacherWiseBtn" onclick="switchView('teacher')">
+                    <i class="fas fa-chalkboard-teacher"></i> Teacher-Wise
+                </button>
+            </div>
+            <div class="filter-group">
+                <select class="filter-select" id="filterSelect">
+                    <option value="all">All Classes</option>
+                </select>
+                <select class="filter-select" id="dayFilter">
+                    <option value="all">All Days</option>
+                    <option value="monday">Monday</option>
+                    <option value="tuesday">Tuesday</option>
+                </select>
+            </div>
+            <button class="btn-save" onclick="downloadTimetable()">
+                <i class="fas fa-download"></i> Save
+            </button>
+        </div>
+    </div>
+
+    <!-- Timetable Content -->
+    <div class="timetable-container">
+        <div class="timetable-grid" id="timetableGrid">
+            <!-- Will be populated by JavaScript -->
+        </div>
+
+        <div class="unscheduled-section">
+            <div class="unscheduled-title">
+                Unscheduled Lessons <span style="font-style: italic; color: #6b7280;">(Drag cards here while rearranging)</span>
+            </div>
+            <div class="unscheduled-message">No unscheduled lessons</div>
+        </div>
+    </div>
+
+    <script src="timetable-script.js"></script>
+    <script src="view-timetable-script.js"></script>
+</body>
+</html>

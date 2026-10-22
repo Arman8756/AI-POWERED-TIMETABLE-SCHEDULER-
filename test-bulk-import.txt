@@ -1,0 +1,11 @@
+Deepak Poonia, CSE 4B, Design & Analysis of Algorithms, 5
+Pankaj Sharma, CSE 4B, Database Management Systems, 5
+Ravindrabadu Ravula, CSE 4B, Operating Systems, 4
+Sanchit Jain, CSE 4B, Theory of Computation, 4
+Vijay Kumar Agarwal, CSE 4B, Computer Organization & Architecture, 4
+
+Abdul Bari | Jaimy Dsouza, CSE 4A | CSE 4B, Data Structures | Software Engineering, 6
+Amit Khurana | Vishwadeep Gothi, CSE 4A | CSE 4B, Computer Networks | Artificial Intelligence, 6
+Devasane Mallesham | Deepak Poonia, CSE 4A | CSE 4B, Machine Learning | Operating Systems Lab, 4
+Pankaj Sharma | Sanchit Jain, CSE 4A | CSE 4B, DBMS Lab | DAA Lab, 4
+Ravindrabadu Ravula | Vijay Kumar Agarwal, CSE 4A | CSE 4B, COA Lab | TOC Lab, 4

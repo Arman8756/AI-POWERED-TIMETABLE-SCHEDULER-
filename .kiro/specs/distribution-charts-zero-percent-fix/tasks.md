@@ -1,0 +1,129 @@
+# Implementation Plan
+
+- [ ] 1. Write bug condition exploration test
+  - **Property 1: Bug Condition** - Distribution Charts Display Zero Percent
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists
+  - **Scoped PBT Approach**: For deterministic bugs, scope the property to the concrete failing case(s) to ensure reproducibility
+  - Test that when a user navigates to view-timetable.html after generating a timetable with scheduled lessons, the distribution charts display "0 / 48 periods (0.0%)" for all classes and teachers (Bug Condition from design)
+  - Verify the bug condition: `generatedTimetable EXISTS in localStorage AND generatedTimetable.classWise HAS scheduled lessons AND generatedTimetable.teacherWise HAS scheduled lessons AND distributionChartsDisplay "0 / 48 periods (0.0%)" OR distributionChartsNotRendered`
+  - The test assertions should match the Expected Behavior Properties from design: distribution charts should display actual period counts and percentages calculated from generatedTimetable data
+  - Test with concrete failing case: Generate a timetable with Class A having 12 scheduled periods, verify distribution chart shows "0 / 48 periods (0.0%)" instead of "12 / 48 periods (25.0%)"
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found to understand root cause (e.g., "Distribution chart HTML sections missing" or "Distribution functions not called" or "Functions don't exist")
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2, 1.3, 1.4_
+
+- [ ] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Timetable Grid Rendering Unchanged
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-buggy inputs (timetable grid rendering, view switching, download functionality)
+  - Observe: Timetable grid renders correctly in teacher-wise view with all teachers and scheduled lessons
+  - Observe: Timetable grid renders correctly in class-wise view with all classes and scheduled lessons
+  - Observe: Switching between teacher-wise and class-wise views re-renders the grid without errors
+  - Observe: Download button generates and downloads timetable as HTML file
+  - Observe: "No Timetable Generated" message displays when localStorage is empty
+  - Observe: Lesson cards display subject names, teacher/class details, and color coding correctly
+  - Write property-based tests capturing observed behavior patterns from Preservation Requirements
+  - Test that for all page loads where timetable data exists, the timetable grid rendering, view switching, lesson card display, and download functionality remain unchanged
+  - Property-based testing generates many test cases for stronger guarantees
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
+
+- [ ] 3. Fix for distribution charts zero percent bug
+
+  - [ ] 3.1 Add distribution chart HTML sections to view-timetable.html
+    - Add distribution container div after timetable grid and before unscheduled section
+    - Add class distribution section with `<div id="classDistribution" class="distribution-list">` and section title "Class Period Distribution"
+    - Add teacher distribution section with `<div id="teacherDistribution" class="distribution-list">` and section title "Teacher Period Distribution"
+    - Add CSS styles for distribution charts (inline or reference timetable-styles.css)
+    - Include styles for: `.distribution-container`, `.distribution-section`, `.distribution-item`, `.distribution-header`, `.progress-bar`, `.progress-fill`
+    - Include color classes: `.progress-purple` (>=90%), `.progress-red` (>=75%), `.progress-yellow` (>=50%), `.progress-green` (<50%)
+    - _Bug_Condition: isBugCondition(input) where generatedTimetable exists with scheduled lessons AND distributionChartsDisplay "0 / 48 periods (0.0%)" OR distributionChartsNotRendered_
+    - _Expected_Behavior: Distribution charts display actual period counts and percentages from design_
+    - _Preservation: Timetable grid rendering, view switching, download functionality unchanged from design_
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
+
+  - [ ] 3.2 Add updateClassDistribution function to view-timetable-script.js
+    - Create function that calculates class period distribution from generatedTimetable.classWise
+    - Initialize period counts for all classes to 0
+    - Iterate through `generatedTimetable.classWise[className][day]` arrays for each class and day
+    - Count non-null entries (scheduled periods) for each class
+    - Calculate percentages: (scheduled_periods / total_periods) × 100, where total_periods = periods_per_day × working_days (8 × 6 = 48)
+    - Generate HTML with distribution bars showing class name, period count, percentage, and progress bar
+    - Update `#classDistribution` element with generated HTML
+    - Handle edge cases: empty timetable, missing classes, division by zero
+    - _Bug_Condition: isBugCondition(input) where generatedTimetable.classWise has scheduled lessons_
+    - _Expected_Behavior: expectedBehavior(result) where result displays actual class period counts and percentages_
+    - _Preservation: Timetable grid rendering unchanged_
+    - _Requirements: 2.1, 2.3, 2.4, 2.5_
+
+  - [ ] 3.3 Add updateTeacherDistribution function to view-timetable-script.js
+    - Create function that calculates teacher period distribution from generatedTimetable.teacherWise
+    - Initialize period counts for all teachers to 0
+    - Iterate through `generatedTimetable.teacherWise[teacherName][day]` arrays for each teacher and day
+    - Count non-null entries (scheduled periods) for each teacher
+    - Calculate percentages: (scheduled_periods / total_periods) × 100, where total_periods = periods_per_day × working_days (8 × 6 = 48)
+    - Generate HTML with distribution bars showing teacher name, period count, percentage, and progress bar
+    - Update `#teacherDistribution` element with generated HTML
+    - Handle edge cases: empty timetable, missing teachers, division by zero
+    - _Bug_Condition: isBugCondition(input) where generatedTimetable.teacherWise has scheduled lessons_
+    - _Expected_Behavior: expectedBehavior(result) where result displays actual teacher period counts and percentages_
+    - _Preservation: Timetable grid rendering unchanged_
+    - _Requirements: 2.2, 2.3, 2.4, 2.5_
+
+  - [ ] 3.4 Add getProgressBarColor helper function to view-timetable-script.js
+    - Create function that returns color class based on percentage
+    - Return 'progress-purple' for percentage >= 90%
+    - Return 'progress-red' for percentage >= 75%
+    - Return 'progress-yellow' for percentage >= 50%
+    - Return 'progress-green' for percentage < 50%
+    - _Expected_Behavior: Color coding matches percentage thresholds_
+    - _Requirements: 2.1, 2.2_
+
+  - [ ] 3.5 Modify loadTimetableData function to call distribution functions
+    - After successful data load and `renderTimetable()` call, add call to `updateClassDistribution()`
+    - After `updateClassDistribution()`, add call to `updateTeacherDistribution()`
+    - Ensure distribution functions are only called when generatedTimetable exists and has data
+    - _Bug_Condition: isBugCondition(input) where distribution functions are not called after data load_
+    - _Expected_Behavior: Distribution functions are called and charts are updated after timetable data is loaded_
+    - _Preservation: Existing loadTimetableData logic unchanged_
+    - _Requirements: 2.1, 2.2, 2.3_
+
+  - [ ] 3.6 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - Distribution Charts Display Actual Period Counts
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - Verify distribution charts now display actual period counts and percentages (e.g., "12 / 48 periods (25.0%)" for Class A with 12 scheduled periods)
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
+
+  - [ ] 3.7 Verify preservation tests still pass
+    - **Property 2: Preservation** - Timetable Grid Rendering Unchanged
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - Verify timetable grid rendering in teacher-wise and class-wise views remains unchanged
+    - Verify view switching continues to work without errors
+    - Verify download functionality still generates correct HTML file
+    - Verify "No Timetable Generated" message still displays when localStorage is empty
+    - Verify lesson card display with subject names, teacher/class details, and color coding remains unchanged
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm all tests still pass after fix (no regressions)
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
+
+- [ ] 4. Checkpoint - Ensure all tests pass
+  - Run all tests (bug condition exploration test and preservation tests)
+  - Verify bug condition test passes (distribution charts display actual counts)
+  - Verify preservation tests pass (timetable grid rendering, view switching, download functionality unchanged)
+  - Manually test the view-timetable.html page with a generated timetable
+  - Verify distribution charts display correct period counts and percentages for all classes and teachers
+  - Verify progress bars have correct widths and color coding
+  - Verify timetable grid displays correctly in both views
+  - Ask the user if questions arise or if additional testing is needed

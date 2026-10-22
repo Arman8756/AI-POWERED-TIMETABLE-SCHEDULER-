@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Timetable - AI Powered Timetable Scheduler</title>
+    <link rel="stylesheet" href="timetable-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="timetable-header">
+        <div class="header-left">
+            <button class="back-btn" onclick="window.location.href='index.html'">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="header-title">
+                <i class="fas fa-calendar-alt"></i>
+                <div>
+                    <h1>Edit Timetable</h1>
+                    <p class="subtitle">Demo Timetable</p>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="saving-indicator">
+                <i class="fas fa-check-circle"></i> Saving...
+            </span>
+            <button class="settings-btn">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="timetable-container">
+        <!-- Navigation Tabs -->
+        <nav class="tabs-nav">
+            <button class="tab-btn active" data-tab="general">
+                <i class="fas fa-cog"></i> General Settings
+            </button>
+            <button class="tab-btn" data-tab="subjects">
+                <i class="fas fa-book"></i> Subjects/Courses
+            </button>
+            <button class="tab-btn" data-tab="teachers">
+                <i class="fas fa-chalkboard-teacher"></i> Teachers/Instructors
+            </button>
+            <button class="tab-btn" data-tab="classes">
+                <i class="fas fa-users"></i> Classes/Grades
+            </button>
+            <button class="tab-btn" data-tab="rooms">
+                <i class="fas fa-door-open"></i> Rooms
+            </button>
+            <button class="tab-btn" data-tab="lessons">
+                <i class="fas fa-calendar-check"></i> Lessons
+            </button>
+            <button class="tab-btn" data-tab="review">
+                <i class="fas fa-eye"></i> Review & Generate
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="content-wrapper">
+            <!-- Left Content -->
+            <div class="main-content-area">
+                <!-- General Settings Tab -->
+                <div class="tab-content active" id="general-tab">
+                    <div class="step-header">
+                        <h2>Set up basic timetable parameters</h2>
+                        <span class="step-indicator">Step 1 of 7</span>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">Timetable Name</label>
+                        <input type="text" class="form-input" placeholder="Enter timetable name" value="8">
+                    </div>
+
+                    <!-- Period & Break Timings -->
+                    <div class="collapsible-section">
+                        <button class="collapsible-header" onclick="toggleSection(this)">
+                            <i class="fas fa-chevron-down"></i>
+                            <span>Show Period & Break Timings</span>
+                        </button>
+                        <div class="collapsible-content" style="display: none;">
+                            <div class="time-settings">
+                                <div class="time-header">
+                                    <i class="far fa-clock"></i>
+                                    <h3>Time Settings</h3>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <label class="form-label">Periods Per Day</label>
+                                    <input type="number" class="form-input" value="8">
+                                </div>
+
+                                <p class="help-text">Set up your periods and breaks. The duration of periods will try to stay consistent.</p>
+
+                                <div id="periods-container">
+                                    <!-- Periods will be dynamically generated -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Days Configuration -->
+                    <div class="form-section">
+                        <div class="section-header-inline">
+                            <div>
+                                <i class="far fa-calendar"></i>
+                                <h3>Days Configuration</h3>
+                                <span class="badge">6 school days selected</span>
+                            </div>
+                            <div class="toggle-buttons">
+                                <span class="toggle-label">Weekly Timetable</span>
+                                <button class="switch-btn">
+                                    <i class="fas fa-sync-alt"></i> Switch to Fortnightly
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="help-text">Select which days (across both weeks) are school days. The remaining days will be considered days off.</p>
+
+                        <div class="days-grid">
+                            <div class="day-card active" data-day="mon">
+                                <span class="day-name">Mon</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="day-card active" data-day="tue">
+                                <span class="day-name">Tue</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="day-card active" data-day="wed">
+                                <span class="day-name">Wed</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="day-card active" data-day="thu">
+                                <span class="day-name">Thu</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="day-card active" data-day="fri">
+                                <span class="day-name">Fri</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="day-card active" data-day="sat">
+                                <span class="day-name">Sat</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="day-card" data-day="sun">
+                                <span class="day-name">Sun</span>
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                        </div>
+
+                        <div class="days-summary">
+                            <div class="summary-section school-days">
+                                <i class="fas fa-check-circle"></i>
+                                <h4>School Days</h4>
+                                <div class="day-tags">
+                                    <span class="day-tag">Monday</span>
+                                    <span class="day-tag">Tuesday</span>
+                                    <span class="day-tag">Wednesday</span>
+                                    <span class="day-tag">Thursday</span>
+                                    <span class="day-tag">Friday</span>
+                                    <span class="day-tag">Saturday</span>
+                                </div>
+                            </div>
+                            <div class="summary-section days-off">
+                                <i class="fas fa-times-circle"></i>
+                                <h4>Days Off</h4>
+                                <div class="day-tags">
+                                    <span class="day-tag">Sunday</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="form-navigation">
+                        <button class="btn-secondary" disabled>
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </button>
+                        <span class="step-text">Step 1 of 7</span>
+                        <button class="btn-primary" onclick="nextTab()">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Subjects/Courses Tab -->
+                <div class="tab-content" id="subjects-tab">
+                    <div class="step-header">
+                        <h2>Add all subjects or courses taught</h2>
+                        <span class="step-indicator">Step 2 of 7</span>
+                    </div>
+
+                    <div class="subjects-section">
+                        <div class="section-info">
+                            <i class="fas fa-book"></i>
+                            <div>
+                                <h3>Subjects/Courses</h3>
+                                <p>Add all the subjects or courses you want to schedule. You can also manage time-off for them.</p>
+                            </div>
+                        </div>
+
+                        <div class="subjects-table">
+                            <div class="table-header">
+                                <div class="col-name">NAME</div>
+                                <div class="col-availability">AVAILABILITY</div>
+                                <div class="col-actions">ACTIONS</div>
+                            </div>
+
+                            <div id="subjects-list" class="subjects-list">
+                                <!-- Subjects will be added here dynamically -->
+                            </div>
+
+                            <div id="empty-subjects" class="empty-message" style="display: none;">
+                                <p>No subjects added yet. Click "Add Subject" to get started.</p>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn-outline" onclick="sortSubjects()">
+                                <i class="fas fa-sort-alpha-down"></i> Sort A-Z
+                            </button>
+                            <button class="btn-outline" onclick="showBulkImport()">
+                                <i class="fas fa-upload"></i> Bulk Import
+                            </button>
+                            <button class="btn-primary" onclick="showAddSubjectModal()">
+                                <i class="fas fa-plus"></i> Add Subject
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-navigation">
+                        <button class="btn-secondary" onclick="prevTab()">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </button>
+                        <span class="step-text">Step 2 of 7</span>
+                        <button class="btn-primary" onclick="nextTab()">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Teachers/Instructors Tab -->
+                <div class="tab-content" id="teachers-tab">
+                    <div class="step-header">
+                        <h2>Add all teachers or instructors</h2>
+                        <span class="step-indicator">Step 3 of 7</span>
+                    </div>
+
+                    <div class="subjects-section">
+                        <div class="section-info">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <div>
+                                <h3>Teachers/Instructors</h3>
+                                <p>Add all the teachers or instructors who will be teaching. You can also manage their availability.</p>
+                            </div>
+                        </div>
+
+                        <div class="subjects-table">
+                            <div class="table-header">
+                                <div class="col-name">NAME</div>
+                                <div class="col-availability">AVAILABILITY</div>
+                                <div class="col-actions">ACTIONS</div>
+                            </div>
+
+                            <div id="teachers-list" class="subjects-list">
+                                <!-- Teachers will be added here -->
+                            </div>
+
+                            <div id="empty-teachers" class="empty-message">
+                                <p>No teachers added yet. Click "Add Teacher" to get started.</p>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn-outline" onclick="sortTeachers()">
+                                <i class="fas fa-sort-alpha-down"></i> Sort A-Z
+                            </button>
+                            <button class="btn-outline" onclick="showBulkImportTeachers()">
+                                <i class="fas fa-upload"></i> Bulk Import
+                            </button>
+                            <button class="btn-primary" onclick="showAddTeacherModal()">
+                                <i class="fas fa-plus"></i> Add Teacher
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-navigation">
+                        <button class="btn-secondary" onclick="prevTab()">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </button>
+                        <span class="step-text">Step 3 of 7</span>
+                        <button class="btn-primary" onclick="nextTab()">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Classes/Grades Tab -->
+                <div class="tab-content" id="classes-tab">
+                    <div class="step-header">
+                        <h2>Define classes or grades</h2>
+                        <span class="step-indicator">Step 4 of 7</span>
+                    </div>
+
+                    <div class="subjects-section">
+                        <div class="section-info">
+                            <i class="fas fa-users"></i>
+                            <div>
+                                <h3>Classes/Groups</h3>
+                                <p>Add classes or groups or grades and assign class teachers. You can also set time off for them.</p>
+                            </div>
+                        </div>
+
+                        <div class="subjects-table">
+                            <div class="table-header">
+                                <div class="col-name">NAME</div>
+                                <div class="col-teacher">Class Teacher <i class="fas fa-info-circle"></i></div>
+                                <div class="col-availability">AVAILABILITY</div>
+                                <div class="col-actions">ACTIONS</div>
+                            </div>
+
+                            <div id="classes-list" class="subjects-list">
+                                <!-- Classes will be added here -->
+                            </div>
+
+                            <div id="empty-classes" class="empty-message">
+                                <p>No classes added yet. Click "Add Class" to get started.</p>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn-outline" onclick="sortClasses()">
+                                <i class="fas fa-sort-alpha-down"></i> Sort A-Z
+                            </button>
+                            <button class="btn-outline" onclick="showBulkImportClasses()">
+                                <i class="fas fa-upload"></i> Bulk Import
+                            </button>
+                            <button class="btn-primary" onclick="showAddClassModal()">
+                                <i class="fas fa-plus"></i> Add Class
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-navigation">
+                        <button class="btn-secondary" onclick="prevTab()">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </button>
+                        <span class="step-text">Step 4 of 7</span>
+                        <button class="btn-primary" onclick="nextTab()">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Rooms Tab -->
+                <div class="tab-content" id="rooms-tab">
+                    <div class="step-header">
+                        <h2>Add your rooms</h2>
+                        <span class="step-indicator">Step 5 of 7</span>
+                    </div>
+
+                    <div class="subjects-section">
+                        <div class="section-info">
+                            <i class="fas fa-door-open"></i>
+                            <div>
+                                <h3>Rooms</h3>
+                                <p>Add rooms and assign them as home rooms for specific classes (optional).</p>
+                            </div>
+                        </div>
+
+                        <div class="info-box">
+                            <i class="fas fa-info-circle"></i>
+                            <div>
+                                <h4>Rooms are Optional</h4>
+                                <p>Only add rooms if your institution has:</p>
+                                <ul>
+                                    <li>Shared facilities (labs, computer rooms, music rooms)</li>
+                                    <li>Rooms with limited capacity that need scheduling coordination</li>
+                                    <li>Classes that require specific room assignments</li>
+                                </ul>
+                                <p>For regular classrooms assigned to specific classes, you don't need to add them here.</p>
+                            </div>
+                        </div>
+
+                        <div class="subjects-table">
+                            <div class="table-header">
+                                <div class="col-name">NAME</div>
+                                <div class="col-teacher">HOME ROOM FOR</div>
+                                <div class="col-availability">AVAILABILITY</div>
+                                <div class="col-actions">ACTIONS</div>
+                            </div>
+
+                            <div id="rooms-list" class="subjects-list">
+                                <!-- Rooms will be added here -->
+                            </div>
+
+                            <div id="empty-rooms" class="empty-message">
+                                <p>No rooms added yet. Click "Add Room" to get started.</p>
+                            </div>
+                        </div>
+
+                        <div class="info-note">
+                            <i class="fas fa-home"></i>
+                            <p>Assign a room as a home room for a specific class to automatically schedule all lectures for that class in this room.</p>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn-outline" onclick="sortRooms()">
+                                <i class="fas fa-sort-alpha-down"></i> Sort A-Z
+                            </button>
+                            <button class="btn-outline" onclick="showBulkImportRooms()">
+                                <i class="fas fa-upload"></i> Bulk Import
+                            </button>
+                            <button class="btn-primary" onclick="showAddRoomModal()">
+                                <i class="fas fa-plus"></i> Add Room
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-navigation">
+                        <button class="btn-secondary" onclick="prevTab()">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </button>
+                        <span class="step-text">Step 5 of 7</span>
+                        <button class="btn-primary" onclick="nextTab()">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lessons Tab -->
+                <div class="tab-content" id="lessons-tab">
+                    <div class="step-header">
+                        <h2>Configure class-wise lessons</h2>
+                        <span class="step-indicator">Step 6 of 7</span>
+                    </div>
+
+                    <div class="subjects-section">
+                        <div class="section-info">
+                            <i class="fas fa-calendar-check"></i>
+                            <div>
+                                <h3>Lessons</h3>
+                                <p>Add lessons for each class with the subject(s), teacher(s), and number of periods per timetable cycle.</p>
+                            </div>
+                        </div>
+
+                        <!-- View Toggle Buttons -->
+                        <div class="view-toggle-container">
+                            <div class="view-toggle-buttons">
+                                <button class="view-toggle-btn active" id="class-wise-btn" onclick="switchLessonView('class')">
+                                    <i class="fas fa-users"></i> View Class Wise
+                                </button>
+                                <button class="view-toggle-btn" id="teacher-wise-btn" onclick="switchLessonView('teacher')">
+                                    <i class="fas fa-chalkboard-teacher"></i> View Teacher Wise
+                                </button>
+                            </div>
+                            <div class="expand-collapse-buttons">
+                                <button class="btn-text" onclick="expandAllLessons()">Expand All</button>
+                                <button class="btn-text" onclick="collapseAllLessons()">Collapse All</button>
+                            </div>
+                        </div>
+
+                        <!-- Lessons Content -->
+                        <div id="lessons-content" class="lessons-content">
+                            <div class="empty-lessons-state">
+                                <i class="fas fa-calendar-times"></i>
+                                <h3>No lessons added yet.</h3>
+                                <p>Add lessons by clicking the "Add New Lesson" button below.</p>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn-outline" onclick="showBulkImportLessons()">
+                                <i class="fas fa-upload"></i> Bulk Import
+                            </button>
+                            <button class="btn-primary" onclick="showAddLessonModal()">
+                                <i class="fas fa-plus"></i> Add New Lesson
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-navigation">
+                        <button class="btn-secondary" onclick="prevTab()">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </button>
+                        <span class="step-text">Step 6 of 7</span>
+                        <button class="btn-primary" onclick="nextTab()">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="review-tab">
+                    <div class="step-header">
+                        <h2>Verify and create your timetable</h2>
+                        <span class="step-indicator">Step 7 of 7</span>
+                    </div>
+                    
+                    <!-- General Settings Summary -->
+                    <div class="review-summary-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-cog"></i> General Settings
+                        </h3>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <span class="summary-label">Timetable Name</span>
+                                <span class="summary-value" id="reviewTimetableName">Demo Timetable</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Periods Per Day</span>
+                                <span class="summary-value" id="reviewPeriodsPerDay">8</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Working Days</span>
+                                <span class="summary-value" id="reviewWorkingDays">Monday, Tuesday, Wednesday, Thursday, Friday, Saturday</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Setup Overview -->
+                    <div class="review-summary-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-bar"></i> Setup Overview
+                        </h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon subjects-icon">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="totalSubjects">0</div>
+                                    <div class="stat-label">Subjects/Courses</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon classes-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="totalClasses">0</div>
+                                    <div class="stat-label">Classes/Groups</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon teachers-icon">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="totalTeachers">0</div>
+                                    <div class="stat-label">Teachers</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon lessons-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="totalLessons">0</div>
+                                    <div class="stat-label">Lessons</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon periods-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="totalPeriods">0</div>
+                                    <div class="stat-label">Total Lesson Periods</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon vacant-icon">
+                                    <i class="fas fa-calendar-times"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="vacantSlots">0</div>
+                                    <div class="stat-label">Vacant Slots</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Distribution Charts -->
+                    <div class="distribution-container">
+                        <!-- Class Period Distribution -->
+                        <div class="distribution-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-users"></i> Class Period Distribution
+                            </h3>
+                            <div id="classDistribution" class="distribution-list">
+                                <!-- Will be populated dynamically -->
+                            </div>
+                        </div>
+                        
+                        <!-- Teacher Period Distribution -->
+                        <div class="distribution-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-chalkboard-teacher"></i> Teacher Period Distribution
+                            </h3>
+                            <div id="teacherDistribution" class="distribution-list">
+                                <!-- Will be populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Generate Button -->
+                    <div class="generate-section">
+                        <div class="generate-card">
+                            <h3>Ready to Generate Your Timetable?</h3>
+                            <p>All your data is ready. Click the button to create your timetable.</p>
+                            <button class="btn-generate" onclick="generateTimetable()">
+                                <i class="fas fa-magic"></i> Generate Timetable
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-navigation">
+                        <button class="btn-secondary" onclick="prevTab()">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </button>
+                        <span class="step-text">Step 7 of 7</span>
+                        <button class="btn-primary" disabled style="opacity: 0.5; cursor: not-allowed;">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <aside class="tips-sidebar">
+                <div class="tips-card">
+                    <div class="tips-header">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>Tips & Tricks</h3>
+                    </div>
+                    <ul class="tips-list">
+                        <li><i class="fas fa-check"></i> Give a name to the timetable.</li>
+                        <li><i class="fas fa-check"></i> Add your desired number of periods.</li>
+                        <li><i class="fas fa-check"></i> Optionally you can add the period timings also, not required.</li>
+                        <li><i class="fas fa-check"></i> Optionally you can add breaks too if you want them to be shown in the printed timetable.</li>
+                        <li><i class="fas fa-check"></i> Select the days when your institute is operational.</li>
+                        <li><i class="fas fa-check"></i> You can also switch to fortnightly timetable if your institute has bi-weekly schedule.</li>
+                    </ul>
+                </div>
+
+                <div class="help-card">
+                    <i class="fas fa-question-circle"></i>
+                    <h3>Need help?</h3>
+                    <p>A timetable assistant will be there to answer your questions.</p>
+                    <button class="btn-help">
+                        <i class="fas fa-phone"></i> Schedule a Call
+                    </button>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="timetable-script.js"></script>
+    <script src="timetable-script-enhanced-v2.js"></script>
+</body>
+</html>
