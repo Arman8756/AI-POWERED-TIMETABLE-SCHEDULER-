@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step-by-Step Guide - AI Powered Timetable Scheduler</title>
+    <link rel="stylesheet" href="timetable-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ── Layout ── */
+        .guide-header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .guide-header .header-left { display:flex; align-items:center; gap:1rem; }
+        .guide-header .header-title { display:flex; align-items:center; gap:.75rem; }
+        .guide-header .header-title i { font-size:1.8rem; color:#3b82f6; }
+        .guide-header .header-title h1 { font-size:1.3rem; font-weight:600; color:#1f2937; }
+        .guide-header .subtitle { font-size:.85rem; color:#6b7280; }
+
+        .page-body {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 60%, #60a5fa 100%);
+            border-radius: 20px;
+            padding: 3rem 2.5rem;
+            color: white;
+            margin-bottom: 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        .hero-text h2 { font-size: 1.9rem; font-weight: 700; margin-bottom: .6rem; }
+        .hero-text p  { font-size: 1rem; opacity: .9; max-width: 480px; line-height: 1.6; }
+        .hero-icon { font-size: 5rem; opacity: .25; flex-shrink: 0; }
+
+        /* ── Progress nav ── */
+        .step-nav {
+            display: flex;
+            gap: 0;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.07);
+            overflow: hidden;
+            margin-bottom: 2.5rem;
+        }
+        .step-nav-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: .9rem .5rem;
+            cursor: pointer;
+            font-size: .83rem;
+            font-weight: 500;
+            color: #6b7280;
+            border-right: 1px solid #f3f4f6;
+            transition: all .2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .3rem;
+        }
+        .step-nav-btn:last-child { border-right: none; }
+        .step-nav-btn .nav-num {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: #f3f4f6; color: #9ca3af;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700;
+        }
+        .step-nav-btn.active {
+            background: #eff6ff; color: #1d4ed8;
+        }
+        .step-nav-btn.active .nav-num { background: #3b82f6; color: white; }
+        .step-nav-btn.done .nav-num { background: #22c55e; color: white; }
+        .step-nav-btn.done { color: #15803d; }
+
+        /* ── Step cards ── */
+        .step-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        .step-card.active { display: block; }
+
+        .step-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .step-badge {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; flex-shrink: 0;
+        }
+        .step-badge.blue   { background: #dbeafe; color: #1d4ed8; }
+        .step-badge.purple { background: #ede9fe; color: #7c3aed; }
+        .step-badge.green  { background: #dcfce7; color: #15803d; }
+        .step-badge.orange { background: #ffedd5; color: #c2410c; }
+        .step-badge.teal   { background: #ccfbf1; color: #0f766e; }
+        .step-badge.pink   { background: #fce7f3; color: #9d174d; }
+        .step-badge.yellow { background: #fef9c3; color: #854d0e; }
+
+        .step-card-header h3 { font-size: 1.15rem; font-weight: 700; color: #1f2937; }
+        .step-card-header p  { font-size: .88rem; color: #6b7280; margin-top: .2rem; }
+
+        .step-card-body { padding: 2rem; }
+
+        /* ── Sub-steps ── */
+        .substep-list { display: flex; flex-direction: column; gap: 1.1rem; }
+        .substep {
+            display: flex;
+            gap: 1rem;
+            padding: 1.1rem 1.25rem;
+            background: #f9fafb;
+            border-radius: 12px;
+            border-left: 4px solid #e5e7eb;
+            transition: border-color .2s;
+        }
+        .substep:hover { border-left-color: #3b82f6; background: #f0f7ff; }
+        .substep-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: #dbeafe; color: #1d4ed8;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .9rem; flex-shrink: 0; margin-top: .1rem;
+        }
+        .substep-icon.green  { background: #dcfce7; color: #15803d; }
+        .substep-icon.orange { background: #ffedd5; color: #c2410c; }
+        .substep-icon.purple { background: #ede9fe; color: #7c3aed; }
+        .substep-icon.teal   { background: #ccfbf1; color: #0f766e; }
+        .substep h4 { font-size: .9rem; font-weight: 600; color: #1f2937; margin-bottom: .25rem; }
+        .substep p  { font-size: .85rem; color: #6b7280; line-height: 1.5; }
+
+        /* ── Tip box ── */
+        .tip-box {
+            display: flex;
+            gap: .9rem;
+            align-items: flex-start;
+            padding: 1rem 1.25rem;
+            background: #fefce8;
+            border: 1px solid #fde047;
+            border-radius: 10px;
+            margin-top: 1.5rem;
+            font-size: .88rem;
+            color: #854d0e;
+        }
+        .tip-box i { flex-shrink: 0; margin-top: .1rem; color: #eab308; font-size: 1rem; }
+
+        /* ── Info box ── */
+        .info-box {
+            display: flex;
+            gap: .9rem;
+            align-items: flex-start;
+            padding: 1rem 1.25rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            margin-top: 1.5rem;
+            font-size: .88rem;
+            color: #1d4ed8;
+        }
+        .info-box i { flex-shrink: 0; margin-top: .1rem; }
+
+        /* ── Screenshot placeholder ── */
+        .screenshot {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            border-radius: 10px;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: .85rem;
+            gap: .5rem;
+            margin: 1.25rem 0;
+            border: 1.5px dashed #d1d5db;
+        }
+
+        /* ── Navigation footer ── */
+        .step-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 2rem;
+            border-top: 1px solid #f3f4f6;
+            background: #fafafa;
+        }
+        .step-counter { font-size: .85rem; color: #9ca3af; font-weight: 500; }
+
+        .btn-nav {
+            padding: .6rem 1.4rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: .9rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            transition: all .2s;
+        }
+        .btn-nav.prev { background: #f3f4f6; color: #374151; }
+        .btn-nav.prev:hover { background: #e5e7eb; }
+        .btn-nav.next { background: #3b82f6; color: white; }
+        .btn-nav.next:hover { background: #2563eb; }
+        .btn-nav.finish { background: #22c55e; color: white; }
+        .btn-nav.finish:hover { background: #16a34a; }
+
+        /* ── Quick reference card ── */
+        .quick-ref {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+            padding: 1.75rem 2rem;
+            margin-top: 2rem;
+        }
+        .quick-ref h3 { font-size: 1.05rem; font-weight: 700; color: #1f2937; margin-bottom: 1.25rem; }
+        .quick-ref-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .qr-item {
+            padding: .9rem 1rem;
+            border-radius: 10px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+        }
+        .qr-item .qr-icon { font-size: 1.3rem; margin-bottom: .4rem; }
+        .qr-item .qr-title { font-size: .85rem; font-weight: 600; color: #1f2937; margin-bottom: .2rem; }
+        .qr-item .qr-desc  { font-size: .78rem; color: #6b7280; }
+
+        /* ── Completion banner ── */
+        .completion-banner {
+            background: linear-gradient(135deg, #15803d, #22c55e);
+            border-radius: 16px;
+            padding: 2.5rem;
+            color: white;
+            text-align: center;
+            margin-top: 2rem;
+            display: none;
+        }
+        .completion-banner.visible { display: block; }
+        .completion-banner i { font-size: 3rem; margin-bottom: .75rem; display: block; }
+        .completion-banner h2 { font-size: 1.5rem; margin-bottom: .5rem; }
+        .completion-banner p  { opacity: .9; margin-bottom: 1.5rem; }
+        .completion-banner .cta-row { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .cta-btn {
+            padding: .75rem 1.75rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: .95rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            transition: transform .2s;
+        }
+        .cta-btn:hover { transform: translateY(-2px); }
+        .cta-btn.white { background: white; color: #15803d; }
+        .cta-btn.outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,.6); }
+
+        @media (max-width: 640px) {
+            .hero { flex-direction: column; padding: 2rem 1.5rem; }
+            .hero-icon { display: none; }
+            .step-nav-btn .nav-label { display: none; }
+            .page-body { padding: 1.25rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════════════════ HEADER ════════════════ -->
+<header class="guide-header">
+    <div class="header-left">
+        <button class="back-btn" onclick="window.location.href='index.html'">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-title">
+            <i class="fas fa-book-open"></i>
+            <div>
+                <h1>Step-by-Step Guide</h1>
+                <span class="subtitle">Learn how to use the AI Powered Timetable Scheduler</span>
+            </div>
+        </div>
+    </div>
+    <button class="btn-nav next" onclick="window.location.href='generate-timetable.html'" style="font-size:.85rem;">
+        <i class="fas fa-rocket"></i> Start Now
+    </button>
+</header>
+
+<!-- ════════════════ PAGE BODY ════════════════ -->
+<div class="page-body">
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="hero-text">
+            <h2>Welcome to the Timetable Scheduler</h2>
+            <p>Follow this 7-step guide to create your institution's perfect timetable in minutes. Each step builds on the last — just follow along and you'll have a complete schedule ready to go.</p>
+        </div>
+        <i class="fas fa-calendar-alt hero-icon"></i>
+    </div>
+
+    <!-- Step progress nav -->
+    <div class="step-nav" id="stepNav">
+        <button class="step-nav-btn active" id="navBtn0" onclick="goToStep(0)">
+            <span class="nav-num">1</span>
+            <span class="nav-label">Settings</span>
+        </button>
+        <button class="step-nav-btn" id="navBtn1" onclick="goToStep(1)">
+            <span class="nav-num">2</span>
+            <span class="nav-label">Subjects</span>
+        </button>
+        <button class="step-nav-btn" id="navBtn2" onclick="goToStep(2)">
+            <span class="nav-num">3</span>
+            <span class="nav-label">Teachers</span>
+        </button>
+        <button class="step-nav-btn" id="navBtn3" onclick="goToStep(3)">
+            <span class="nav-num">4</span>
+            <span class="nav-label">Classes</span>
+        </button>
+        <button class="step-nav-btn" id="navBtn4" onclick="goToStep(4)">
+            <span class="nav-num">5</span>
+            <span class="nav-label">Rooms</span>
+        </button>
+        <button class="step-nav-btn" id="navBtn5" onclick="goToStep(5)">
+            <span class="nav-num">6</span>
+            <span class="nav-label">Lessons</span>
+        </button>
+        <button class="step-nav-btn" id="navBtn6" onclick="goToStep(6)">
+            <span class="nav-num">7</span>
+            <span class="nav-label">Generate</span>
+        </button>
+    </div>
+
+    <!-- ── STEP 1: General Settings ── -->
+    <div class="step-card active" id="step0">
+        <div class="step-card-header">
+            <div class="step-badge blue"><i class="fas fa-cog"></i></div>
+            <div>
+                <h3>Step 1 — General Settings</h3>
+                <p>Configure the basic parameters for your timetable</p>
+            </div>
+        </div>
+        <div class="step-card-body">
+            <div class="substep-list">
+                <div class="substep">
+                    <div class="substep-icon"><i class="fas fa-calendar-week"></i></div>
+                    <div>
+                        <h4>Choose Working Days</h4>
+                        <p>Select how many days per week your institution runs. You can pick individual days (Mon–Fri or Mon–Sat) by toggling the day cards on the settings tab.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <h4>Set Periods Per Day</h4>
+                        <p>Enter the number of teaching periods per day (e.g., 8). This determines how many lesson slots are available each day. The system supports 1–12 periods.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon green"><i class="fas fa-arrow-right"></i></div>
+                    <div>
+                        <h4>Move to Next Tab</h4>
+                        <p>Once settings look right, click the "Subjects" tab at the top or use the Next button to continue. You can always come back to adjust these later.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip-box">
+                <i class="fas fa-lightbulb"></i>
+                <span><strong>Tip:</strong> Most schools use 6 days × 8 periods = 48 total slots per teacher per week. The distribution charts on the view page will show how well each teacher's workload is spread across these 48 slots.</span>
+            </div>
+        </div>
+        <div class="step-footer">
+            <span class="step-counter">Step 1 of 7</span>
+            <div style="display:flex;gap:.75rem;">
+                <button class="btn-nav prev" disabled style="opacity:.4;cursor:not-allowed;"><i class="fas fa-arrow-left"></i> Prev</button>
+                <button class="btn-nav next" onclick="nextStep()">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── STEP 2: Subjects ── -->
+    <div class="step-card" id="step1">
+        <div class="step-card-header">
+            <div class="step-badge purple"><i class="fas fa-book"></i></div>
+            <div>
+                <h3>Step 2 — Add Subjects</h3>
+                <p>Define all the subjects / courses taught at your institution</p>
+            </div>
+        </div>
+        <div class="step-card-body">
+            <div class="substep-list">
+                <div class="substep">
+                    <div class="substep-icon purple"><i class="fas fa-plus"></i></div>
+                    <div>
+                        <h4>Add Each Subject</h4>
+                        <p>Click "Add New Subject" and enter the subject name (e.g., Mathematics, English, Physics). Each subject gets a unique color that will appear in the timetable grid.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon purple"><i class="fas fa-edit"></i></div>
+                    <div>
+                        <h4>Edit or Remove</h4>
+                        <p>Use the edit (pencil) icon to rename a subject, or the trash icon to delete it. Subjects that are linked to lessons cannot be deleted until the lesson is removed first.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon purple"><i class="fas fa-layer-group"></i></div>
+                    <div>
+                        <h4>Bulk Import (Optional)</h4>
+                        <p>Click the "Bulk Import" button and paste a list of subject names — one per line. The system will create all of them at once, saving time for larger institutions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                <span>You need at least <strong>1 subject</strong> before you can generate a timetable. Add all subjects you plan to teach before moving to the Lessons step.</span>
+            </div>
+        </div>
+        <div class="step-footer">
+            <span class="step-counter">Step 2 of 7</span>
+            <div style="display:flex;gap:.75rem;">
+                <button class="btn-nav prev" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Prev</button>
+                <button class="btn-nav next" onclick="nextStep()">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── STEP 3: Teachers ── -->
+    <div class="step-card" id="step2">
+        <div class="step-card-header">
+            <div class="step-badge teal"><i class="fas fa-chalkboard-teacher"></i></div>
+            <div>
+                <h3>Step 3 — Add Teachers</h3>
+                <p>Enter all the teachers / instructors who will be assigned to lessons</p>
+            </div>
+        </div>
+        <div class="step-card-body">
+            <div class="substep-list">
+                <div class="substep">
+                    <div class="substep-icon teal"><i class="fas fa-user-plus"></i></div>
+                    <div>
+                        <h4>Add Each Teacher</h4>
+                        <p>Click "Add New Teacher" and enter the teacher's full name (e.g., "Mr. John Smith"). Teachers are identified by their name in the timetable grid and substitute management system.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon teal"><i class="fas fa-layer-group"></i></div>
+                    <div>
+                        <h4>Bulk Import</h4>
+                        <p>Paste a list of teacher names (one per line) using the Bulk Import feature to add many teachers at once.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon teal"><i class="fas fa-user-tie"></i></div>
+                    <div>
+                        <h4>Teacher Substitute System</h4>
+                        <p>Every teacher added here will appear in the Teacher Substitute module. When a teacher is absent, you can assign any other teacher as a substitute for their scheduled periods.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip-box">
+                <i class="fas fa-lightbulb"></i>
+                <span><strong>Tip:</strong> You need at least <strong>1 teacher</strong>. The more teachers you add, the more flexible the AI scheduler is when distributing lessons and suggesting substitutes.</span>
+            </div>
+        </div>
+        <div class="step-footer">
+            <span class="step-counter">Step 3 of 7</span>
+            <div style="display:flex;gap:.75rem;">
+                <button class="btn-nav prev" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Prev</button>
+                <button class="btn-nav next" onclick="nextStep()">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── STEP 4: Classes ── -->
+    <div class="step-card" id="step3">
+        <div class="step-card-header">
+            <div class="step-badge green"><i class="fas fa-users"></i></div>
+            <div>
+                <h3>Step 4 — Add Classes</h3>
+                <p>Define all student groups / grades that need a timetable</p>
+            </div>
+        </div>
+        <div class="step-card-body">
+            <div class="substep-list">
+                <div class="substep">
+                    <div class="substep-icon green"><i class="fas fa-plus"></i></div>
+                    <div>
+                        <h4>Add Each Class</h4>
+                        <p>Enter class names such as "Class 10A", "Grade 9B", or "Year 11 Science". The name you enter will appear as the row label in the class-wise timetable view.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon green"><i class="fas fa-layer-group"></i></div>
+                    <div>
+                        <h4>Bulk Import</h4>
+                        <p>Add many classes at once by pasting names (one per line). Useful for institutions with 10+ classes.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon green"><i class="fas fa-sitemap"></i></div>
+                    <div>
+                        <h4>Multi-Class Lessons</h4>
+                        <p>In the Lessons step you can assign a single lesson to multiple classes simultaneously — great for combined sections or assemblies.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="step-footer">
+            <span class="step-counter">Step 4 of 7</span>
+            <div style="display:flex;gap:.75rem;">
+                <button class="btn-nav prev" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Prev</button>
+                <button class="btn-nav next" onclick="nextStep()">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── STEP 5: Rooms ── -->
+    <div class="step-card" id="step4">
+        <div class="step-card-header">
+            <div class="step-badge orange"><i class="fas fa-door-open"></i></div>
+            <div>
+                <h3>Step 5 — Add Rooms (Optional)</h3>
+                <p>List classrooms or labs if you need room-level scheduling</p>
+            </div>
+        </div>
+        <div class="step-card-body">
+            <div class="substep-list">
+                <div class="substep">
+                    <div class="substep-icon orange"><i class="fas fa-building"></i></div>
+                    <div>
+                        <h4>Add Rooms</h4>
+                        <p>Enter room names or numbers (e.g., "Room 101", "Science Lab", "Computer Lab"). Rooms are optional but help avoid double-booking a physical space.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon orange"><i class="fas fa-layer-group"></i></div>
+                    <div>
+                        <h4>Bulk Import</h4>
+                        <p>Paste all room names at once for quick setup.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                <span>Rooms are <strong>optional</strong> — you can skip this step and still generate a complete timetable. If your school has dedicated labs or limited rooms, adding them helps avoid conflicts.</span>
+            </div>
+        </div>
+        <div class="step-footer">
+            <span class="step-counter">Step 5 of 7</span>
+            <div style="display:flex;gap:.75rem;">
+                <button class="btn-nav prev" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Prev</button>
+                <button class="btn-nav next" onclick="nextStep()">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── STEP 6: Lessons ── -->
+    <div class="step-card" id="step5">
+        <div class="step-card-header">
+            <div class="step-badge pink"><i class="fas fa-calendar-plus"></i></div>
+            <div>
+                <h3>Step 6 — Define Lessons</h3>
+                <p>Link subjects, teachers and classes together with a weekly period count</p>
+            </div>
+        </div>
+        <div class="step-card-body">
+            <div class="substep-list">
+                <div class="substep">
+                    <div class="substep-icon purple"><i class="fas fa-plus"></i></div>
+                    <div>
+                        <h4>Add a Lesson</h4>
+                        <p>Click "Add New Lesson". Select a <strong>subject</strong>, one or more <strong>teachers</strong>, one or more <strong>classes</strong>, and set the <strong>periods per week</strong> (e.g., 4 periods of Maths per week for Class 10A).</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon purple"><i class="fas fa-users"></i></div>
+                    <div>
+                        <h4>Multi-Teacher & Multi-Class</h4>
+                        <p>A single lesson can span multiple classes (combined sections) or be shared between teachers. The AI scheduler handles the assignment automatically.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon purple"><i class="fas fa-eye"></i></div>
+                    <div>
+                        <h4>Review Your Lessons</h4>
+                        <p>Switch between <strong>Class-Wise</strong> and <strong>Teacher-Wise</strong> views to review the lessons you've created and check for gaps before generating.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon orange"><i class="fas fa-layer-group"></i></div>
+                    <div>
+                        <h4>Bulk Import</h4>
+                        <p>You can also paste lesson data in bulk. Check <code>test-bulk-import.txt</code> in the project folder for the expected format.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip-box">
+                <i class="fas fa-lightbulb"></i>
+                <span><strong>Key rule:</strong> Every lesson needs at least one subject, one teacher, and one class. The total periods per week across all lessons should not exceed the total available slots (days × periods per day).</span>
+            </div>
+        </div>
+        <div class="step-footer">
+            <span class="step-counter">Step 6 of 7</span>
+            <div style="display:flex;gap:.75rem;">
+                <button class="btn-nav prev" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Prev</button>
+                <button class="btn-nav next" onclick="nextStep()">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── STEP 7: Generate ── -->
+    <div class="step-card" id="step6">
+        <div class="step-card-header">
+            <div class="step-badge yellow"><i class="fas fa-magic"></i></div>
+            <div>
+                <h3>Step 7 — Review &amp; Generate</h3>
+                <p>Check your data summary and let the AI build your timetable</p>
+            </div>
+        </div>
+        <div class="step-card-body">
+            <div class="substep-list">
+                <div class="substep">
+                    <div class="substep-icon teal"><i class="fas fa-clipboard-check"></i></div>
+                    <div>
+                        <h4>Review the Summary</h4>
+                        <p>The Review tab shows a summary of all subjects, teachers, classes, rooms and lessons you've added. Check the counts match your expectations before generating.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon green"><i class="fas fa-rocket"></i></div>
+                    <div>
+                        <h4>Click "Generate Timetable"</h4>
+                        <p>Press the big Generate button. The AI scheduler allocates lessons to time slots while ensuring no teacher or class has double-bookings. A progress animation shows while it optimises.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon green"><i class="fas fa-table"></i></div>
+                    <div>
+                        <h4>View the Result</h4>
+                        <p>After generation you'll be taken to the <strong>View Timetable</strong> page. Switch between <strong>Teacher-Wise</strong> and <strong>Class-Wise</strong> views, check the distribution charts, and download the timetable as an HTML file.</p>
+                    </div>
+                </div>
+                <div class="substep">
+                    <div class="substep-icon orange"><i class="fas fa-user-tie"></i></div>
+                    <div>
+                        <h4>Manage Substitutions</h4>
+                        <p>Back on the dashboard, click the orange <strong>Teacher Substitute</strong> card to record absences and assign substitute teachers for any scheduled period.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tip-box">
+                <i class="fas fa-lightbulb"></i>
+                <span><strong>Tip:</strong> If some lessons remain unscheduled after generation, it means there were not enough free slots. Try reducing periods per lesson or removing lessons that overflow the available weekly slots.</span>
+            </div>
+        </div>
+        <div class="step-footer">
+            <span class="step-counter">Step 7 of 7</span>
+            <div style="display:flex;gap:.75rem;">
+                <button class="btn-nav prev" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Prev</button>
+                <button class="btn-nav finish" onclick="finishGuide()"><i class="fas fa-check"></i> Done!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Completion Banner ── -->
+    <div class="completion-banner" id="completionBanner">
+        <i class="fas fa-party-horn">🎉</i>
+        <h2>You're ready to go!</h2>
+        <p>You know everything needed to create your first timetable. Head over to the generator and give it a try.</p>
+        <div class="cta-row">
+            <button class="cta-btn white" onclick="window.location.href='generate-timetable.html'">
+                <i class="fas fa-plus"></i> Generate Timetable
+            </button>
+            <button class="cta-btn outline" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Quick Reference ── -->
+    <div class="quick-ref">
+        <h3><i class="fas fa-bolt" style="color:#f59e0b;margin-right:.4rem;"></i> Quick Reference</h3>
+        <div class="quick-ref-grid">
+            <div class="qr-item">
+                <div class="qr-icon">📋</div>
+                <div class="qr-title">Minimum to Generate</div>
+                <div class="qr-desc">1 subject · 1 teacher · 1 class · 1 lesson</div>
+            </div>
+            <div class="qr-item">
+                <div class="qr-icon">📅</div>
+                <div class="qr-title">Default Slots</div>
+                <div class="qr-desc">6 days × 8 periods = 48 slots / teacher / week</div>
+            </div>
+            <div class="qr-item">
+                <div class="qr-icon">🎨</div>
+                <div class="qr-title">6 Lesson Colors</div>
+                <div class="qr-desc">Auto-assigned per subject in the grid view</div>
+            </div>
+            <div class="qr-item">
+                <div class="qr-icon">💾</div>
+                <div class="qr-title">Auto-Saved</div>
+                <div class="qr-desc">All data is saved to your browser's localStorage</div>
+            </div>
+            <div class="qr-item">
+                <div class="qr-icon">🔄</div>
+                <div class="qr-title">Re-generate Anytime</div>
+                <div class="qr-desc">Change lessons and hit Generate again to refresh</div>
+            </div>
+            <div class="qr-item">
+                <div class="qr-icon">📥</div>
+                <div class="qr-title">Export</div>
+                <div class="qr-desc">Download timetable as an HTML file from the view page</div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /page-body -->
+
+<script>
+    // ── Step navigation ──
+    const TOTAL_STEPS = 7;
+    let currentStep = 0;
+    const visitedSteps = new Set([0]);
+
+    function goToStep(n) {
+        document.getElementById('step' + currentStep).classList.remove('active');
+        document.getElementById('navBtn' + currentStep).classList.remove('active');
+
+        currentStep = n;
+        visitedSteps.add(n);
+
+        document.getElementById('step' + currentStep).classList.add('active');
+        document.getElementById('navBtn' + currentStep).classList.add('active');
+
+        // Mark previously visited steps as done (except current)
+        for (let i = 0; i < TOTAL_STEPS; i++) {
+            const btn = document.getElementById('navBtn' + i);
+            btn.classList.remove('done');
+            if (i !== currentStep && visitedSteps.has(i)) {
+                btn.classList.add('done');
+                btn.querySelector('.nav-num').innerHTML = '<i class="fas fa-check" style="font-size:.7rem;"></i>';
+            } else if (i !== currentStep) {
+                btn.querySelector('.nav-num').textContent = i + 1;
+            }
+        }
+        document.getElementById('navBtn' + currentStep).querySelector('.nav-num').textContent = currentStep + 1;
+
+        // Hide completion banner unless on last step after finishing
+        document.getElementById('completionBanner').classList.remove('visible');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function nextStep() {
+        if (currentStep < TOTAL_STEPS - 1) goToStep(currentStep + 1);
+    }
+
+    function prevStep() {
+        if (currentStep > 0) goToStep(currentStep - 1);
+    }
+
+    function finishGuide() {
+        document.getElementById('completionBanner').classList.add('visible');
+        document.getElementById('completionBanner').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Mark all nav buttons done
+        for (let i = 0; i < TOTAL_STEPS; i++) {
+            const btn = document.getElementById('navBtn' + i);
+            btn.classList.add('done');
+            btn.classList.remove('active');
+            btn.querySelector('.nav-num').innerHTML = '<i class="fas fa-check" style="font-size:.7rem;"></i>';
+        }
+    }
+</script>
+</body>
+</html>

@@ -8,6 +8,8 @@ function loadTimetableData() {
     if (data) {
         generatedTimetable = JSON.parse(data);
         renderTimetable();
+        updateClassDistribution();
+        updateTeacherDistribution();
     } else {
         // Show message that no timetable is generated
         document.getElementById('timetableGrid').innerHTML = `
@@ -182,3 +184,134 @@ function downloadTimetable() {
 document.addEventListener('DOMContentLoaded', function() {
     loadTimetableData();
 });
+
+// ── Distribution chart helpers ────────────────────────────────
+
+/**
+ * Returns a CSS class name for the progress bar based on the given percentage.
+ * >= 90% → progress-purple
+ * >= 75% → progress-red
+ * >= 50% → progress-yellow
+ *  < 50% → progress-green
+ */
+function getProgressBarColor(percentage) {
+    if (percentage >= 90) return 'progress-purple';
+    if (percentage >= 75) return 'progress-red';
+    if (percentage >= 50) return 'progress-yellow';
+    return 'progress-green';
+}
+
+/**
+ * Calculates and renders the Class Period Distribution chart.
+ * Iterates through generatedTimetable.classWise and counts non-null
+ * entries (scheduled periods) for each class, then displays each
+ * class as a labelled progress bar.
+ */
+function updateClassDistribution() {
+    const container = document.getElementById('classDistribution');
+    if (!container) return;
+
+    if (!generatedTimetable || !generatedTimetable.classWise) {
+        container.innerHTML = '<div class="distribution-empty">No timetable data available.</div>';
+        return;
+    }
+
+    const classWise    = generatedTimetable.classWise;
+    const days         = generatedTimetable.days    || [];
+    const periodsPerDay = generatedTimetable.periods || 0;
+    const totalPeriods  = days.length * periodsPerDay; // e.g. 6 × 8 = 48
+
+    const classNames = Object.keys(classWise);
+    if (classNames.length === 0) {
+        container.innerHTML = '<div class="distribution-empty">No classes found in timetable.</div>';
+        return;
+    }
+
+    // Sort classes alphabetically for consistent display
+    classNames.sort();
+
+    let html = '';
+    classNames.forEach(className => {
+        let scheduled = 0;
+        days.forEach(day => {
+            const slots = classWise[className][day] || [];
+            slots.forEach(slot => { if (slot !== null) scheduled++; });
+        });
+
+        const safeTotal = totalPeriods > 0 ? totalPeriods : 1;
+        const pct       = Math.min((scheduled / safeTotal) * 100, 100);
+        const colorClass = getProgressBarColor(pct);
+
+        html += `
+        <div class="distribution-item">
+            <div class="distribution-header">
+                <span class="distribution-name">${className}</span>
+                <span class="distribution-stats">${scheduled} / ${totalPeriods} periods (${pct.toFixed(1)}%)</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill ${colorClass}" style="width:${pct}%"></div>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+/**
+ * Calculates and renders the Teacher Period Distribution chart.
+ * Iterates through generatedTimetable.teacherWise and counts non-null
+ * entries (scheduled periods) for each teacher, then displays each
+ * teacher as a labelled progress bar.
+ */
+function updateTeacherDistribution() {
+    const container = document.getElementById('teacherDistribution');
+    if (!container) return;
+
+    if (!generatedTimetable || !generatedTimetable.teacherWise) {
+        container.innerHTML = '<div class="distribution-empty">No timetable data available.</div>';
+        return;
+    }
+
+    const teacherWise   = generatedTimetable.teacherWise;
+    const days          = generatedTimetable.days    || [];
+    const periodsPerDay = generatedTimetable.periods || 0;
+    const totalPeriods  = days.length * periodsPerDay; // e.g. 6 × 8 = 48
+
+    const teacherNames = Object.keys(teacherWise);
+    if (teacherNames.length === 0) {
+        container.innerHTML = '<div class="distribution-empty">No teachers found in timetable.</div>';
+        return;
+    }
+
+    // Sort by scheduled periods descending so busiest teachers appear first
+    const counts = teacherNames.map(name => {
+        let scheduled = 0;
+        days.forEach(day => {
+            const slots = teacherWise[name][day] || [];
+            slots.forEach(slot => { if (slot !== null) scheduled++; });
+        });
+        return { name, scheduled };
+    });
+    counts.sort((a, b) => b.scheduled - a.scheduled);
+
+    const safeTotal = totalPeriods > 0 ? totalPeriods : 1;
+
+    let html = '';
+    counts.forEach(({ name, scheduled }) => {
+        const pct        = Math.min((scheduled / safeTotal) * 100, 100);
+        const colorClass = getProgressBarColor(pct);
+
+        html += `
+        <div class="distribution-item">
+            <div class="distribution-header">
+                <span class="distribution-name">${name}</span>
+                <span class="distribution-stats">${scheduled} / ${totalPeriods} periods (${pct.toFixed(1)}%)</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill ${colorClass}" style="width:${pct}%"></div>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
