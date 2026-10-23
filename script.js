@@ -53,6 +53,9 @@ function handleCardClick(cardTitle) {
             break;
         case 'Step-by-Step Guide':
             showNotification('Guide', 'Opening interactive guide...');
+            setTimeout(() => {
+                window.location.href = 'step-by-step-guide.html';
+            }, 500);
             break;
         case 'Schedule Demo':
             showNotification('Demo', 'Scheduling a personalized demo...');

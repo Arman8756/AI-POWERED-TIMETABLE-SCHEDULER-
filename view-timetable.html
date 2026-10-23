@@ -206,6 +206,90 @@
             color: #6b7280;
             font-style: italic;
         }
+
+        /* ── Distribution Charts ── */
+        .distribution-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .distribution-container { grid-template-columns: 1fr; }
+        }
+
+        .distribution-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .distribution-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .distribution-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            max-height: 340px;
+            overflow-y: auto;
+        }
+
+        .distribution-item {}
+
+        .distribution-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.3rem;
+        }
+
+        .distribution-name {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .distribution-stats {
+            font-size: 0.78rem;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #f3f4f6;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 99px;
+            transition: width 0.6s ease;
+        }
+
+        .progress-purple { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+        .progress-red    { background: linear-gradient(90deg, #dc2626, #f87171); }
+        .progress-yellow { background: linear-gradient(90deg, #d97706, #fbbf24); }
+        .progress-green  { background: linear-gradient(90deg, #059669, #34d399); }
+
+        .distribution-empty {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 2rem;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -253,6 +337,28 @@
                 Unscheduled Lessons <span style="font-style: italic; color: #6b7280;">(Drag cards here while rearranging)</span>
             </div>
             <div class="unscheduled-message">No unscheduled lessons</div>
+        </div>
+
+        <!-- Distribution Charts -->
+        <div class="distribution-container">
+            <div class="distribution-section">
+                <div class="distribution-title">
+                    <i class="fas fa-users" style="color:#7c3aed;"></i>
+                    Class Period Distribution
+                </div>
+                <div class="distribution-list" id="classDistribution">
+                    <div class="distribution-empty">Generate a timetable to see class distribution.</div>
+                </div>
+            </div>
+            <div class="distribution-section">
+                <div class="distribution-title">
+                    <i class="fas fa-chalkboard-teacher" style="color:#2563eb;"></i>
+                    Teacher Period Distribution
+                </div>
+                <div class="distribution-list" id="teacherDistribution">
+                    <div class="distribution-empty">Generate a timetable to see teacher distribution.</div>
+                </div>
+            </div>
         </div>
     </div>
 
